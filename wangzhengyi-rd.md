@@ -12,49 +12,47 @@
 ****
 ## 专业技能
 
-* Android应用层: 熟练掌握Android UI实现, 自定义View, 多线程通信, 进程间通信, HTTP/HTTPS/Socket网络通信, 能够实现自定义网络请求框架, 并对Android源码有一定的研究
+* Android应用层: 熟练掌握Android UI实现, 自定义View, 多线程通信, 进程间通信, HTTP/HTTPS/Socket网络通信, 能够实现自定义网络请求框架, 并对Android源码有一定的研究.
 * Android Framework层: 熟悉Android体系架构和JNI开发, 对AOSP ROM适配有一定的开发经验.
 * 编程语言: 熟练使用JAVA, PHP, C, Shell, 了解HTML, CSS, JavaScript.
-* 数据库: 熟悉SQLite, MySQL, Redis
-* 运维: 熟悉Linux和Linux系统运维, 能够实现基于Nginx的负载均衡web服务器
-* 协作: 熟练使用repo, git, svn
-* 基础: 熟悉并掌握常用算法, 数据结构和设计模式
-* 英语: CET-6, Google无障碍搜索阅读英文资料
+* 数据库: 熟悉SQLite, MySQL, Redis.
+* 运维: 熟悉Linux和Linux系统运维, 能够实现基于Nginx的负载均衡web服务器.
+* 协作: 熟练使用repo, git, svn.
+* 基础: 熟悉并掌握常用算法, 数据结构和设计模式.
+* 英语: CET-6, Google无障碍搜索阅读英文资料.
 
 ****
 ## 工作经历
 
 ### 阿里巴巴 YunOS事业群 研发工程师 2014/07 - 至今
 
-#### 支付手表应用研发 2015/07 - 至今
+#### 智能硬件-支付手表项目 2015/07 - 至今
 
 负责支付手表整个应用层模块开发,具体包括：
 * 天气应用：自定义Volley Request获取并解析天气数据,自定义数据库结构存储地理位置信息,接入高德定位并通过Service定时拉取最新天气数据,实现Widget并通过Service操作RemoteView对Widget定时更新.
 * 秒表、闹钟、计时器：为了适配圆形手表,设计并编写大量自定义控件,用来实现表盘、刻度等UI细节.独立设计并实现刻度替换算法,可以在表盘里合理的显示分钟进制刻度和小时进制刻度.并且提供ContentProvider和AIDL通信,便于其他进程获取闹钟、秒表等数据信息.
 * 设置应用：在Android原生设置应用的基础上,根据手表UI重新实现设置应用,包括亮度调节、声音调节、WIFI模块等.
 * 密码锁：实现第三方密码锁功能,并且深入理解Keyguard锁屏机制,改写Framework的Keyguard代码,替换原生锁屏系统.
-* 自定义控件：会抽象出通用自定义控件,打成jar包或集成到framework.jar中提供给团队同学使用.
+* 自定义控件：会抽象出通用自定义控件,打成jar包或集成到系统以Library Project形式提供给团队同学使用.
 
 #### YunOS Rom适配 2014/11 - 2015/06
 
-负责MTK机型的YunOS Rom适配.主要是通过编译和拼包的方式将YunOS的Rom和MTK具体机型的Rom进行拼装移植.具体技术点包括：
-* 掌握Android Rom编译系统,掌握Android整体系统架构和分布,能够编写Android.mk编译具体模块.
-* 掌握Android的起机流程,包括init进程、zygote进程、SystemServer进程的执行流程,能够从adb log的错误信息中分析和解决起机问题.
+负责MTK机型的YunOS Rom适配.主要是通过编译和拼包的方式将YunOS的Rom和MTK具体机型的Rom进行拼装移植.具体包括：
+* 编写Android.mk单独修改和编译模块,掌握Android Rom编译体系,并对boot.img和system.img进行解包和重新打包.
+* 从abd log分析分析系统起机遇到的问题,并能通过修改init模块,分析zygote和system server源码来解决相应的问题.
+* 编写Edify刷机脚本,通过Fastboot和Recovery对机型进行移植测试.并编译shell脚本,将重复过程脚本化.
 * 熟悉Android Framework层jar包的作用和JNI层大部分动态库的作用,便于遇到问题时替换相应的so库.
-* 熟练掌握Android系统模块的应用开发,能够快速解决屏幕适配问题.
-* 熟练掌握Android Recovery机制、Fastboot刷机和Edify脚本编写.
-* 熟练掌握bash shell脚本编写和git版本库控制,将一些重复性工作自动化.
-* 熟练掌握反编译工具的使用.
 
-该项目适配超过20款机型，并为YunOS增加了百万激活量.目前在刷机大师和刷机精灵网站上热门的YunOS Rom均为我负责研发.
+该项目适配超过20款机型,并为YunOS增加了百万激活量.目前在刷机大师和刷机精灵网站上热门的YunOS Rom均为我负责研发.
 
 #### YunOS移动端论坛 2014/07 - 2014/11
 
-负责YunOS论坛移动端论坛应用研发.这也是我刚接触Android就短期内独立研发并多次迭代上线的一款YunOS官方应用,目前在官方应用市场下载量超过百万,但已经不提供后期维护.具体技术包括：
+负责YunOS论坛移动端研发.这也是我刚接触Android就短期内独立研发并多次迭代上线的一款YunOS官方应用,目前在官方应用市场下载量超过百万.具体技术包括：
 
+* 设计应用的实现架构和目录结构.
 * 设计并封装了HTTP网络请求,提供队列机制对网络请求进行并发处理.
 * 设计了ViewPager+Fragment的UI架构,并且自定义控件实现ViewPageIndicator,可跟随ViewPager进行滑动和颜色的改变,并能响应click事件.
-* 当时就已经封装并使用WebView,并定制JavaScript接口来进行特殊请求处理.
+* 封装并使用WebView,并定制JavaScript接口来进行特殊请求处理.
 
 ### 北京灵创众和科技有限公司 服务端研发工程师 2011/11 - 2013/09
 
