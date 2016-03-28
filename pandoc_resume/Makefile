@@ -12,3 +12,4 @@ clean:
 	rm resume.tex
 	rm resume.tuc
 	rm resume.pdf
+	rm resume.log
