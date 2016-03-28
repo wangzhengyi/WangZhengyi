@@ -11,5 +11,4 @@ resume.pdf: resume.md
 clean:
 	rm resume.tex
 	rm resume.tuc
-	rm resume.log
 	rm resume.pdf
