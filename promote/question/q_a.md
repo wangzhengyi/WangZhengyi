@@ -1,3 +1,29 @@
+# ROM适配
+
+#### 解决的一个难点问题
+
+问题描述：如何解决uuid属性设置问题.UUID注册模块的需要在本地设置一个ro.yunos.uuid的属性，但是属性的设置是由init模块的控制的，每个属性的设置都需要有相应的权限。像这个属性就需要有root权限才能进行设置，而在应用层非root机型最多只能获取system权限。
+
+YunOS的模块可以修改boot分区的init模块源码，从而可以直接降级这个属性的设置权限。而MTK机型拼包适配只有init的二进制文件，是没法修改init源码的。针对这种情况，我设计了如下的解决方案：
+
+1. 修改UUID源码，先设置一个system权限可配置的trigger属性。
+2. 编写一个c代码，编译成二进制程序放在bin目录中，作用是：设置ro.yunos.uuid属性。
+2. 在init.rc文件，增加一个属性trigger，当配置的trigger属性为设置值时，启动这个二进制程序进行设置。而这个二进制程序的运行权限就是root权限了。
+
+#### 分析Android系统日志
+
+Android日志分为kernel、radio、event和main四大种类.
+
+kernel: kernel log属于系统内核的log，通过读取/proc/kmsg文件获取.
+radio: 属于Android RIL层log，可以adb logcat -b参数获取.
+main: 是我们应用层打出的log，adb logcat默认输出的就是main log, -b main也行.
+event: 属于system log，可以通过adb logcat -b event获取.
+
+#### 替换的动态库
+
+
+
+
 # 网络框架
 
 #### 如何解耦?
@@ -42,6 +68,15 @@ HTTP的request和response都包含了HTTP HEADER和HTTP BODY，HTTP HEADER中保
 4. 支持HTTPS，更好的支持服务器自签名证书(需要复习).
 
 
+#### 如何解析Http Header?
+
+1. 需要获取Http Header字段.
+
+```java
+connection.getHeaderFields(); // Map<String, List<String>>
+```
+
+
 ## Android内部解耦
 
 如何解耦的？
@@ -53,4 +88,30 @@ HTTP的request和response都包含了HTTP HEADER和HTTP BODY，HTTP HEADER中保
 EventBus的原理:
 
 1. Activity的注册利用了Java的反射机制，根据对象获取其Class类类型，然后遍历每个循环响应函数.响应函数的标识为存在@Subscribe注解。对于每个响应函数，我们构建订阅事件-订阅函数的Map集合，同时也构造订阅函数-订阅事件的map集合。
-2. 发布事件后，查询EventBus的订阅事件-订阅函数集合，找出订阅函数，并通过反射回调订阅函数响应订阅事件。 
+2. 发布事件后，查询EventBus的订阅事件-订阅函数集合，找出订阅函数，并通过反射回调订阅函数响应订阅事件。
+
+
+-------
+# 为什么升你为资深开发工程师?(等类似问题)
+
+1. 首先，在过去的两年时间里，我的主管和我的师兄给了我很多技术指导，加上项目的锤炼和个人努力，我认为自己的技术水平已经完成超过p6的技术要求，并且自身的技术覆盖面更加全面.
+2. 然后，在过去的一年时间里，由于主管的信任，个人已独立负责业务项目，并且所负责的业务项目都很好的完成了既定目标，我认为自己具备了独当一面的能力。
+3. 最后，个人也比较注重技术的分享和传承，能够帮助新人快速融入研发体系，也能在小组内进行很好的串联。
+
+因此，我认为自己已经能够胜任p6的职位。
+
+-------
+# 升到p6之后有什么规划，给组内带来什么贡献？
+
+
+-------
+# 之后有什么规划？
+
+
+-------
+# 为什么能称之为技术亮点?
+
+
+------
+# 除了ppt之上还遇到了哪些难题？
+
