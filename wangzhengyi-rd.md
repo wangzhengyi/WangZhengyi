@@ -14,6 +14,7 @@
 
 * Android应用层: 熟练掌握Android UI实现, 自定义View, 多线程通信, 进程间通信, HTTP/HTTPS/Socket网络通信, 能够实现自定义网络请求框架, 并对Android源码有一定的研究.
 * Android Framework层: 熟悉Android体系架构和JNI开发, 对AOSP ROM适配有一定的开发经验.
+* 前端: 有Vue框架项目实践，熟悉JavaScript, 了解HTML、CSS基本前端知识.
 * 编程语言: 熟练使用JAVA, PHP, C, Shell, 了解HTML, CSS, JavaScript.
 * 数据库: 熟悉SQLite, MySQL, Redis.
 * 运维: 熟悉Linux和Linux系统运维, 能够实现基于Nginx的负载均衡web服务器.
