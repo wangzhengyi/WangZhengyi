@@ -322,6 +322,55 @@ public void setForegroundService(final Service keepLiveService, final Service in
 }
 ```
 
+### 进程死后拉活的方案
+
+#### 利用系统广播拉活
+
+方法设计思想:在发生特定系统时,系统会发出响应的广播,通过在AndroidManifest中静态注册对应的广播监听器,即可在发生响应事件时拉活.
+
+常用于拉活的广播事件包括：
+
+| 开机广播 | RECEIVE_BOOT_COMPLETED|
+| 网络变化 | ACCESS_NETWORK_STATE<br>CHANGE_NETWORK_STATE<br>ACCESS_WIFI_STATE<br>CHANGE_WIFI_STATE<br>ACCESS_FINE_LOCATION<br>ACCESS_LOCATION_EXTRA_COMMANDS|
+| 文件挂载 | MOUNT_UNMOUNT_FILESYSTEMS|
+| 屏幕亮灭 | SCREEN_ON<br>SCREEN_OFF |
+| 屏幕解锁 | RECEIVE_USER_PRESENT |
+| 应用安装卸载 | PACKAGE_ADDED<br>PACKAGE_REMOVED|
+
+方案适用范围：适用于全部Android平台,但存在如下几个缺点：
+
+1. 广播接收器被管理软件、系统软件通过“自启管理”等功能禁用的场景无法接收到广播,从而无法自启动.
+2. 系统广播事件不可控,只能保证发生事件时拉活进程,但无法保证进程挂掉后立即拉活.
+
+#### 利用第三方广播拉活
+
+方案设计思想：该方案总的设计思想与接收系统广播类似,不同的是该方案为接收第三方 Top 应用广播.
+
+通过反编译第三方Top应用,如：手机QQ、微信、支付宝、UC浏览器等,以及友盟、信鸽、个推等 SDK,找出它们外发的广播,在应用中进行监听,这样当这些应用发出广播时,就会将我们的应用拉活.
+
+方案适用范围：该方案的有效程度除与系统广播一样的因素外,主要受如下因素限制：
+
+1. 反编译分析过的第三方应用的多少
+2. 第三方应用的广播属于应用私有,当前版本中有效的广播,在后续版本随时就可能被移除或被改为不外发.
+
+这些因素都影响了拉活的效果.
+
+#### 利用系统Service机制拉活
+
+方案设计思想：将Service设置为START_STICKY,利用系统机制在Service挂掉后自动拉活：
+
+```java
+@Override
+public int onStartCommand(Intent intent, int flags, int startId) {
+    return Service.START_STICKY;
+}
+```
+
+方案在如下两种情况无法拉活：
+
+1. Service 第一次被异常杀死后会在5秒内重启,第二次被杀死会在10秒内重启,第三次会在20秒内重启,一旦在短时间内 Service 被杀死达到5次,则系统不再拉起.
+2. 进程被取得 Root 权限的管理工具或系统工具通过 forestop 停止掉,无法重启.
+
 
 -------
 ## Service和IntentService的区别
@@ -340,3 +389,87 @@ IntentService同Service相比的好处:
 
 1. 省去了我们在Service中手动开启线程的麻烦.
 2. 当操作完成后,IntentService会自动退出.
+
+-------
+## 如何优雅的展示Bitmap大图
+
+### 使用BitmapFactory.Options压缩图片
+
+BitmapFactory这个类提供了多个解析方法(decodeByteArray,decodeFile,decodeResource等)用于创建Bitmap对象,我们应该根据图片的来源选择合适的方法.比如SD卡中图片就用decodeFile方法,网络上的图片就用decodeStream方法,资源文件中的图片就可以使用decodeResource方法.为此,每一种解析方法都提供了一个可选的BitmapFactory.Options参数,将这个参数的inJustDecodeBounds属性设置为true就可以让解析方法禁止为Bitmap分配内存,返回值也不再是一个Bitmap对象,而是null.虽然Bitmap是null,但是BitmapFactory.Options的outWidth、outHeight和outMimeType属性都会被赋值.这个技巧可以在加载图片之前就获取到图片的长宽值和MIME类型,从而根据情况对图片进行压缩.如下代码所示：
+
+```java
+BitmapFactory.Options options = new BitmapFactory.Options();
+options.inJustDecodeBounds = true;
+BitmapFactory.decodeResource(getResources(), R.id.image, options);
+int imageWidth = options.outWidth;
+int imageHeight = options.outHeight;
+String imageType = options.outMimeType;
+```
+为了避免OOM异常,最好在解析每张图片的时候都先检查一下图片的大小.
+现在图片的大小已经知道了,我们就可以决定是把整张图片加载到内存中还是加载一个压缩版的图片到内存中.以下几个因素是我们需要考虑的：
+
+1. 预估一下整张图片所需占用的内存.
+2. 为了加载这一张图片你愿意提供多少内存.
+3. 用于展示这张图片的控件的实际大小.
+4. 当前设备的屏幕尺寸和分辨率.
+
+比如,你的ImageView只有128*96像素的大小,只是为了显示一张缩略图,这时候把一张1024*768像素的图片完全加载到内存显然是不值得的.
+
+那我们怎样才能对图片进行压缩呢？通过设置BitmapFactory.Options中的inSampleSize的值就可以实现了.比如我们有一张2048*1536像素的图片,将inSampleSize设置为4,就可以把这张图片压缩成512*384像素.原本加载这张图片需要占用13M的内存,压缩后就只需要占用0.75M了(假设图片是ARGB_8888类型,即每个像素点占用4个字节).下面的方法可以根据传入的宽和高,计算出合适的inSampleSize值：
+
+```java
+public static int calculateInSampleSize(BitmapFactory.Options options, int reqWidth, int reqHeight) {
+    // 源图片的宽度和高度
+    final int width = options.outWidth;
+    final int height = options.outHeight;
+    int inSampleSize = 1;
+
+    if (height > reqHeight || width > reqWidth) {
+        final int heightRatio = Math.round((float)height / (float)reqHeight);
+        final int widthRatio = Math.round((float)width / (float)reqWidth);
+        inSampleSize = heightRatio < widthRatio ? heightRatio : widthRatio;
+    }
+
+    return inSampleSize;
+}
+```
+
+使用这个方法,首先你要将BitmapFactory.Options的inJustDecodeBounds属性设置为true,解析一次图片.然后将BitmapFactory.Options连同期望的宽度和高度一起传递到到calculateInSampleSize方法中,就可以得到合适的inSampleSize值了.之后再解析一次图片,使用新获取到的inSampleSize值,并把inJustDecodeBounds设置为false,就可以得到压缩后的图片了.
+
+```java
+public static Bitmap decodeBitmapFromResource(Resource res, int redId, int reqWidth, int reqHeight) {
+    final BitmapFactory.Options options = new BitmapFactory.Options();
+    options.inJustDecodeBounds = true;
+    BitmapFactory.decodeResource(res, resId, options);
+    options.inSampleSize = calculateInSampleSize(options, reqWidth, reqHeight);
+    options.inJustDecodeBounds = false;
+    return BitmapFactory.decodeResource(res, resId, options);
+}
+```
+
+### 使用LRU图片缓存
+
+这里给出一个LRU图片缓存的具体实现:
+```java
+public class BitmapCache {
+    private LruCache<String, Bitmap> mCache = null;
+
+    public BitmapCache(cacheSize) {
+        mCache = new LruCache<String, Bimtap>(cacheSize) {
+            @Override
+            protected int sizeOf(String key, Bitmap value) {
+                return value.getRowBytes * value.getHeight();
+            }
+        }
+    }
+
+    public Bimtap getBitmap(String key) {
+        return mCache.get(key);
+    }
+
+    public void putBitmap(String key, Bitmap value) {
+        mCache.put(key, value);
+    }
+}
+```
+
