@@ -460,16 +460,104 @@ public class BitmapCache {
             protected int sizeOf(String key, Bitmap value) {
                 return value.getRowBytes * value.getHeight();
             }
-        }
+        };
     }
-
     public Bimtap getBitmap(String key) {
         return mCache.get(key);
     }
-
     public void putBitmap(String key, Bitmap value) {
         mCache.put(key, value);
     }
 }
 ```
 
+-------
+# Thread和HandleThread区别
+
+Thread大家经常使用,是用来开辟一个线程,使用方法是:
+```java
+Thread thread = new Thread(new Runnable() {
+    @Override
+    public void run() {
+        // do something waste time
+    }
+});
+thread.start();
+```
+
+通过这种方法创建多个线程,会导致我们的程序越来越慢.这种时候,我们就可以通过HandlerThread来开辟一个线程,然后将Runnable扔到HandlerThread的处理队列中,顺序执行.参考代码:
+
+```java
+public void handleFirstBtnClick(View view) {
+    Log.i(TAG, "handleFirstBtnClick: main thread id=" + Thread.currentThread().getId());
+    final HandlerThread thread = new HandlerThread("my-handler-thread");
+    thread.start();
+    Handler handler = new Handler(thread.getLooper());
+    handler.post(new Runnable() {
+        @Override
+        public void run() {
+            Log.i(TAG, "run: I am run current thread=" + Thread.currentThread().getId());
+            for (int i = 0; i < 10; i ++) {
+                Log.i(TAG, "run: print msg i=" + i);
+                try {
+                    Thread.sleep(1000);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+    });
+}
+```
+
+日志:
+```text
+03-27 19:48:18.754 3950-3950/android.com I/MainActivity: handleFirstBtnClick: main thread id=1
+03-27 19:48:18.757 3950-4065/android.com I/MainActivity: run: I am run current thread=2536
+03-27 19:48:18.757 3950-4065/android.com I/MainActivity: run: print msg i=0
+03-27 19:48:19.757 3950-4065/android.com I/MainActivity: run: print msg i=1
+```
+
+通过运行日志可以看出,handler去post的Runnable是运行在HandlerThread线程中的.
+
+从源码的角度去分析,只需要注意一点：HandlerThread如何保证getLooper()的时候Looper对象已经创建成功了.
+
+我们首先来看一下HandlerThread的getLooper()源码：
+```java
+public Looper getLooper() {
+    if (!isAlive()) {
+        // 如果线程已经死掉,return null
+        return null;
+    }
+    
+   // 使用了生产者-消费者模式,如果mLooper一直为null,则让出cpu进行循环等待被唤醒
+    synchronized (this) {
+        while (isAlive() && mLooper == null) {
+            try {
+                wait();
+            } catch (InterruptedException e) {
+            }
+        }
+    }
+    return mLooper;
+}
+```
+
+HandlerThread中Looper初始化是在run()函数中执行的：
+```java
+@Override
+public void run() {
+    mTid = Process.myTid();
+    Looper.prepare();
+    synchronized (this) {
+        mLooper = Looper.myLooper();
+        notifyAll();
+    }
+    Process.setThreadPriority(mPriority);
+    onLooperPrepared();
+    Looper.loop();
+    mTid = -1;
+}
+```
+
+可以看到,在run方法中,Looper对象进行了初始化,并且初始化成功后会调用notifyAll方法唤醒调用getLooper()方法的调用者.
