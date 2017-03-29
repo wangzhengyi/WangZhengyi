@@ -561,3 +561,117 @@ public void run() {
 ```
 
 可以看到,在run方法中,Looper对象进行了初始化,并且初始化成功后会调用notifyAll方法唤醒调用getLooper()方法的调用者.
+
+-------
+## 关于include,merge,stub三者的使用场景
+
+### include标签
+
+include标签常用于将布局中的公共部分提取出来供其他layout使用,以实现布局模块化.
+下面是一个在main.xml中使用include引入另一个布局foot.xml的例子.main.xml代码如下:
+```xml
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent" >
+    <ListView
+        android:id="@+id/simple_list_view"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_marginBottom="@dimen/dp_80" />
+    <include layout="@layout/foot.xml" />
+</RelativeLayout>
+```
+
+其中,include引入的foot.xml为公共的页面底部,代码如下:
+```xml
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent" >
+    <Button
+        android:id="@+id/button"
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/dp_40"
+        android:layout_above="@+id/text" />
+    <TextView
+        android:id="@+id/text"
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/dp_40"
+        android:layout_alignParentBottom="true"
+        android:text="@string/app_name" />
+</RelativeLayout>
+```
+include标签唯一需要的属性是**layout**属性,指定需要包含的布局文件.可以定义android:id和android:layout_*属性来覆盖被引入布局根节点的对应属性值.注意,重新定义android:id后,子布局的顶节点android:id就变化了.
+
+### ViewStub标签
+ViewStub标签同include标签一样可以用来引入一个外部布局,不同的是,ViewStub引入的布局默认不会扩张,即既不会占用显示,也不会占用位置,从而在解析layout时节省cpu和内存.
+ViewStub常用来引入那些默认不会显示,只在特殊情况下显示的布局,如进度布局、网络失败显示的刷新布局、信息出错出现的提示布局等.
+下面以在一个布局main.xml中加入网络错误时的提示页面network_error.xml为例,main.xml代码如下:
+```xml
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent" >
+
+    <ViewStub
+        android:id="@+id/network_error_layout"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout="@layout/network_error" />
+</RelativeLayout>
+```
+
+其中,network_error.xml为只有在网络错误时才需要显示的布局,默认不会被解析,示例代码如下：
+```xml
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent" >
+    <Button
+        android:id="@+id/network_setting"
+        android:layout_width="@dimen/dp_160"
+        android:layout_height="wrap_content"
+        android:layout_centerHorizontal="true"
+        android:text="@string/network_setting" />
+    <Button
+        android:id="@+id/network_refresh"
+        android:layout_width="@dimen/dp_160"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/network_setting"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="@dimen/dp_10"
+        android:text="@string/network_refresh" />
+</RelativeLayout>
+```
+
+在Java中,通过(ViewStub)findViewById(id)找到ViewStub,通过stub.inflate()展开ViewStub,然后得到子View,如下:
+```java
+private View networkErrorView;
+
+private void showNetError() {
+    if (networkErrorView != null) {
+        networkErrorView.setVisibility(View.VISIBLE);
+        return;
+    }
+
+    ViewStub stub = (ViewStub)findViewById(R.id.network_error_layout);
+    networkErrorView = stub.inflate();
+}
+
+private void showNormal() {
+    if (networkErrorView != null) {
+        networkErrorView.setVisibility(View.GONE);
+    }
+}
+```
+在上面showNetError()中展开了ViewStub,同时我们对networkErrorView进行了保存,这样下次就不用继续inflate.
+
+### merge标签
+
+在使用了include后可能导致布局嵌套过多,多余不必要的layout节点容易导致布局解析变慢.可以通过hierarchy viewer去分析.(Android Studio->Tools->Android->Android Device Monitor)
+
+merge标签可用于两种典型情况：
+
+1. 布局顶点是FrameLayout且不需要设置background或者padding等属性,可以用merge代替,因为Activity内容视图的parent view就是FrameLayout.
+2. 某布局作为子布局被其他布局include时,使用merge当做该布局的顶节点,这样在被引入时顶节点会自动被忽略,而将其子节点全部合并到主布局中.
