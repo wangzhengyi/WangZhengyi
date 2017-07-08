@@ -26,8 +26,6 @@
 ## 社区项目(主力开发)
 
 * [ThinDownloadManager](https://github.com/smanikandan14/ThinDownloadManager)
-* [Volley源码分析](https://github.com/wangzhengyi/Volley)
-* [EventBus源码分析](https://github.com/wangzhengyi/EventBusAnalysis)
 
 ****
 ## 工作经历
