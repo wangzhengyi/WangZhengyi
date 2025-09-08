@@ -10,9 +10,25 @@ import UIKit
 class ViewController: UIViewController {
     
     // MARK: - UI Components
+    private let logoImageView: UIImageView = {
+        let imageView = UIImageView()
+        // 使用 SF Symbols 作为默认图标
+        if #available(iOS 13.0, *) {
+            imageView.image = UIImage(systemName: "swift")
+            imageView.tintColor = .systemOrange
+        } else {
+            // iOS 12 及以下版本的备用图标
+            imageView.backgroundColor = .systemOrange
+            imageView.layer.cornerRadius = 30
+        }
+        imageView.contentMode = .scaleAspectFit
+        imageView.translatesAutoresizingMaskIntoConstraints = false
+        return imageView
+    }()
+    
     private let helloLabel: UILabel = {
         let label = UILabel()
-        label.text = "Hello, World!"
+        label.text = "Hello, WZY!"
         label.font = UIFont.systemFont(ofSize: 32, weight: .bold)
         label.textAlignment = .center
         label.textColor = .systemBlue
@@ -59,6 +75,7 @@ class ViewController: UIViewController {
             view.backgroundColor = .white
         }
         
+        view.addSubview(logoImageView)
         view.addSubview(helloLabel)
         view.addSubview(subtitleLabel)
         view.addSubview(tapButton)
@@ -66,9 +83,15 @@ class ViewController: UIViewController {
     
     private func setupConstraints() {
         NSLayoutConstraint.activate([
+            // Logo ImageView
+            logoImageView.centerXAnchor.constraint(equalTo: view.centerXAnchor),
+            logoImageView.centerYAnchor.constraint(equalTo: view.centerYAnchor, constant: -120),
+            logoImageView.widthAnchor.constraint(equalToConstant: 80),
+            logoImageView.heightAnchor.constraint(equalToConstant: 80),
+            
             // Hello Label
             helloLabel.centerXAnchor.constraint(equalTo: view.centerXAnchor),
-            helloLabel.centerYAnchor.constraint(equalTo: view.centerYAnchor, constant: -60),
+            helloLabel.topAnchor.constraint(equalTo: logoImageView.bottomAnchor, constant: 20),
             helloLabel.leadingAnchor.constraint(greaterThanOrEqualTo: view.leadingAnchor, constant: 20),
             helloLabel.trailingAnchor.constraint(lessThanOrEqualTo: view.trailingAnchor, constant: -20),
             
@@ -97,9 +120,12 @@ class ViewController: UIViewController {
         // Update UI with animation
         UIView.animate(withDuration: 0.3, animations: {
             self.tapButton.transform = CGAffineTransform(scaleX: 0.95, y: 0.95)
+            // 添加图片旋转动画
+            self.logoImageView.transform = CGAffineTransform(rotationAngle: .pi / 4)
         }) { _ in
             UIView.animate(withDuration: 0.3) {
                 self.tapButton.transform = .identity
+                self.logoImageView.transform = .identity
             }
         }
         
