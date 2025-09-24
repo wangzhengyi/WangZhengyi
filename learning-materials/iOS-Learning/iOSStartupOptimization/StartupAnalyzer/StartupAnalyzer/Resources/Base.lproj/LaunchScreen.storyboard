@@ -1,0 +1,110 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="21507" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" launchScreen="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES" initialViewController="01J-lp-oVM">
+    <device id="retina6_12" orientation="portrait" appearance="light"/>
+    <dependencies>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="21505"/>
+        <capability name="Safe area layout guides" minToolsVersion="9.0"/>
+        <capability name="System colors in document resources" minToolsVersion="11.0"/>
+        <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
+    </dependencies>
+    <scenes>
+        <!--View Controller-->
+        <scene sceneID="EHf-IW-A2E">
+            <objects>
+                <viewController id="01J-lp-oVM" sceneMemberID="viewController">
+                    <view key="view" contentMode="scaleToFill" id="Ze5-6b-2t3">
+                        <rect key="frame" x="0.0" y="0.0" width="393" height="852"/>
+                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                        <subviews>
+                            <!-- 应用图标 -->
+                            <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="speedometer.fill" catalog="system" translatesAutoresizingMaskIntoConstraints="NO" id="app-icon-imageview">
+                                <rect key="frame" x="146.66666666666666" y="356" width="100" height="100"/>
+                                <color key="tintColor" systemColor="systemBlueColor"/>
+                                <constraints>
+                                    <constraint firstAttribute="width" constant="100" id="icon-width"/>
+                                    <constraint firstAttribute="height" constant="100" id="icon-height"/>
+                                </constraints>
+                            </imageView>
+                            
+                            <!-- 应用名称 -->
+                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="启动分析器" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="app-name-label">
+                                <rect key="frame" x="20" y="476" width="353" height="29"/>
+                                <fontDescription key="fontDescription" type="system" weight="semibold" pointSize="24"/>
+                                <color key="textColor" systemColor="labelColor"/>
+                                <nil key="highlightedColor"/>
+                            </label>
+                            
+                            <!-- 副标题 -->
+                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="iOS启动性能分析工具" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="subtitle-label">
+                                <rect key="frame" x="20" y="515" width="353" height="21"/>
+                                <fontDescription key="fontDescription" type="system" weight="medium" pointSize="17"/>
+                                <color key="textColor" systemColor="secondaryLabelColor"/>
+                                <nil key="highlightedColor"/>
+                            </label>
+                            
+                            <!-- 加载指示器 -->
+                            <activityIndicatorView opaque="NO" contentMode="scaleToFill" horizontalHuggingPriority="750" verticalHuggingPriority="750" animating="YES" style="medium" translatesAutoresizingMaskIntoConstraints="NO" id="loading-indicator">
+                                <rect key="frame" x="186.66666666666666" y="576" width="20" height="20"/>
+                                <color key="color" systemColor="systemBlueColor"/>
+                            </activityIndicatorView>
+                            
+                            <!-- 版权信息 -->
+                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="© 2024 iOS Learning Project" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="copyright-label">
+                                <rect key="frame" x="20" y="783" width="353" height="15"/>
+                                <fontDescription key="fontDescription" type="system" pointSize="12"/>
+                                <color key="textColor" systemColor="tertiaryLabelColor"/>
+                                <nil key="highlightedColor"/>
+                            </label>
+                        </subviews>
+                        <viewLayoutGuide key="safeArea" id="6Tk-OE-BBY"/>
+                        <color key="backgroundColor" systemColor="systemBackgroundColor"/>
+                        <constraints>
+                            <!-- 应用图标约束 -->
+                            <constraint firstItem="app-icon-imageview" firstAttribute="centerX" secondItem="Ze5-6b-2t3" secondAttribute="centerX" id="icon-center-x"/>
+                            <constraint firstItem="app-icon-imageview" firstAttribute="centerY" secondItem="Ze5-6b-2t3" secondAttribute="centerY" constant="-20" id="icon-center-y"/>
+                            
+                            <!-- 应用名称约束 -->
+                            <constraint firstItem="app-name-label" firstAttribute="top" secondItem="app-icon-imageview" secondAttribute="bottom" constant="20" id="name-top"/>
+                            <constraint firstItem="app-name-label" firstAttribute="leading" secondItem="6Tk-OE-BBY" secondAttribute="leading" constant="20" id="name-leading"/>
+                            <constraint firstItem="6Tk-OE-BBY" firstAttribute="trailing" secondItem="app-name-label" secondAttribute="trailing" constant="20" id="name-trailing"/>
+                            
+                            <!-- 副标题约束 -->
+                            <constraint firstItem="subtitle-label" firstAttribute="top" secondItem="app-name-label" secondAttribute="bottom" constant="10" id="subtitle-top"/>
+                            <constraint firstItem="subtitle-label" firstAttribute="leading" secondItem="6Tk-OE-BBY" secondAttribute="leading" constant="20" id="subtitle-leading"/>
+                            <constraint firstItem="6Tk-OE-BBY" firstAttribute="trailing" secondItem="subtitle-label" secondAttribute="trailing" constant="20" id="subtitle-trailing"/>
+                            
+                            <!-- 加载指示器约束 -->
+                            <constraint firstItem="loading-indicator" firstAttribute="top" secondItem="subtitle-label" secondAttribute="bottom" constant="40" id="loading-top"/>
+                            <constraint firstItem="loading-indicator" firstAttribute="centerX" secondItem="Ze5-6b-2t3" secondAttribute="centerX" id="loading-center-x"/>
+                            
+                            <!-- 版权信息约束 -->
+                            <constraint firstItem="6Tk-OE-BBY" firstAttribute="bottom" secondItem="copyright-label" secondAttribute="bottom" constant="20" id="copyright-bottom"/>
+                            <constraint firstItem="copyright-label" firstAttribute="leading" secondItem="6Tk-OE-BBY" secondAttribute="leading" constant="20" id="copyright-leading"/>
+                            <constraint firstItem="6Tk-OE-BBY" firstAttribute="trailing" secondItem="copyright-label" secondAttribute="trailing" constant="20" id="copyright-trailing"/>
+                        </constraints>
+                    </view>
+                </viewController>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="iYj-Kq-Ea1" userLabel="First Responder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="53" y="375"/>
+        </scene>
+    </scenes>
+    <resources>
+        <image name="speedometer.fill" catalog="system" width="128" height="124"/>
+        <systemColor name="labelColor">
+            <color white="0.0" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+        </systemColor>
+        <systemColor name="secondaryLabelColor">
+            <color red="0.23529411764705882" green="0.23529411764705882" blue="0.2627450980392157" alpha="0.59999999999999998" colorSpace="custom" customColorSpace="sRGB"/>
+        </systemColor>
+        <systemColor name="systemBackgroundColor">
+            <color white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+        </systemColor>
+        <systemColor name="systemBlueColor">
+            <color red="0.0" green="0.47843137254901963" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+        </systemColor>
+        <systemColor name="tertiaryLabelColor">
+            <color red="0.23529411764705882" green="0.23529411764705882" blue="0.2627450980392157" alpha="0.29999999999999999" colorSpace="custom" customColorSpace="sRGB"/>
+        </systemColor>
+    </resources>
+</document>

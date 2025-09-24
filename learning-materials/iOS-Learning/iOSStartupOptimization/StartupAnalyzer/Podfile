@@ -1,0 +1,66 @@
+# Uncomment the next line to define a global platform for your project
+platform :ios, '13.0'
+
+target 'StartupAnalyzer' do
+  # Comment the next line if you don't want to use dynamic frameworks
+  use_frameworks!
+
+  # Pods for StartupAnalyzer
+  
+  # 图表库 - 用于性能数据可视化
+  pod 'Charts', '~> 4.1.0'
+  
+  # 网络请求库 - 用于数据上报（可选）
+  pod 'Alamofire', '~> 5.8.0'
+  
+  # JSON解析库
+  pod 'SwiftyJSON', '~> 5.0.1'
+  
+  # 约束布局辅助库
+  pod 'SnapKit', '~> 5.6.0'
+  
+  # 日志库
+  pod 'CocoaLumberjack/Swift', '~> 3.8.0'
+  
+  # 性能监控辅助库
+  pod 'FBRetainCycleDetector', '~> 0.1.4'
+  
+  target 'StartupAnalyzerTests' do
+    inherit! :search_paths
+    # Pods for testing
+    pod 'Quick', '~> 7.0.0'
+    pod 'Nimble', '~> 12.0.0'
+  end
+
+  target 'StartupAnalyzerUITests' do
+    # Pods for testing
+    pod 'Quick', '~> 7.0.0'
+    pod 'Nimble', '~> 12.0.0'
+  end
+
+end
+
+# 后处理脚本
+post_install do |installer|
+  installer.pods_project.targets.each do |target|
+    target.build_configurations.each do |config|
+      # 设置最低部署目标
+      config.build_settings['IPHONEOS_DEPLOYMENT_TARGET'] = '13.0'
+      
+      # 禁用Bitcode（如果需要）
+      config.build_settings['ENABLE_BITCODE'] = 'NO'
+      
+      # 设置Swift版本
+      config.build_settings['SWIFT_VERSION'] = '5.0'
+      
+      # 优化编译设置
+      if config.name == 'Debug'
+        config.build_settings['SWIFT_OPTIMIZATION_LEVEL'] = '-Onone'
+        config.build_settings['GCC_OPTIMIZATION_LEVEL'] = '0'
+      else
+        config.build_settings['SWIFT_OPTIMIZATION_LEVEL'] = '-O'
+        config.build_settings['GCC_OPTIMIZATION_LEVEL'] = 's'
+      end
+    end
+  end
+end
