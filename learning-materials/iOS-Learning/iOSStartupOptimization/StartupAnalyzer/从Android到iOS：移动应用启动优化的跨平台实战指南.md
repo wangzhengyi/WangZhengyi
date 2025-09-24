@@ -126,6 +126,20 @@ class StartupMonitor {
 }
 ```
 
+> **💡 Swift语法小贴士**：注意这里的 `func recordPhase(_ phase: LaunchPhase)` 语法
+> 
+> 在Swift中，`_` 表示**省略外部参数名**，这样调用时更简洁：
+> ```swift
+> // 使用 _ 的调用方式（推荐）
+> startupMonitor.recordPhase(.applicationDidFinishLaunching)
+> 
+> // 如果不使用 _，则需要写参数名
+> startupMonitor.recordPhase(phase: .applicationDidFinishLaunching)
+> ```
+> 
+> 这种设计让Swift函数调用更像Java/Kotlin的风格，对Android开发者更友好！
+
+
 ### Android启动监控对比实现
 
 ```kotlin
