@@ -1,26 +1,21 @@
 import Foundation
 
-// 示例算法：Two Sum（两数之和）
-func twoSum(_ nums: [Int], _ target: Int) -> (Int, Int)? {
-    var dict: [Int: Int] = [:]
-    for (i, num) in nums.enumerated() {
-        if let j = dict[target - num] {
-            return (j, i)
-        }
-        dict[num] = i
-    }
-    return nil
-}
+func demoLruSwift() {
+    let cache = LruCache<Int, String>(capacity: 3)
+    cache.put(key: 1, value: "A")
+    cache.put(key: 2, value: "B")
+    cache.put(key: 3, value: "C")
+    print("LRU 初始: \(cache.keys())")
 
-func demoTwoSum() {
-    let nums = [2, 7, 11, 15]
-    let target = 9
-    if let (i, j) = twoSum(nums, target) {
-        print("TwoSum => indices: \(i), \(j); values: \(nums[i]), \(nums[j])")
-    } else {
-        print("No solution found")
-    }
+    _ = cache.get(2)
+    print("LRU 访问2后: \(cache.keys())")
+
+    cache.put(key: 4, value: "D")
+    print("LRU 插入4后: \(cache.keys())")
+
+    cache.put(key: 2, value: "B2")
+    print("LRU 更新2后: \(cache.keys())")
 }
 
 // 程序入口
-demoTwoSum()
+demoLruSwift()

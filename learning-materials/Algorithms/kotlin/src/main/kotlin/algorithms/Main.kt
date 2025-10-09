@@ -1,18 +1,24 @@
 package algorithms
 
-// 示例算法：Two Sum（两数之和）
-fun twoSum(nums: IntArray, target: Int): IntArray {
-    val map = HashMap<Int, Int>()
-    for ((i, num) in nums.withIndex()) {
-        val complement = target - num
-        val j = map[complement]
-        if (j != null) return intArrayOf(j, i)
-        map[num] = i
-    }
-    return intArrayOf()
+
+// 示例：LRU 缓存
+fun demoLru() {
+    val cache = LruCache<Int, String>(capacity = 3)
+    cache.put(1, "A")
+    cache.put(2, "B")
+    cache.put(3, "C")
+    println("LRU 初始: ${cache.keys()}") // 3,2,1
+
+    cache.get(2)
+    println("LRU 访问2后: ${cache.keys()}") // 2,3,1
+
+    cache.put(4, "D")
+    println("LRU 插入4后: ${cache.keys()}") // 4,2,3
+
+    cache.put(2, "B2")
+    println("LRU 更新2后: ${cache.keys()}") // 2,4,3
 }
 
 fun main() {
-    val res = twoSum(intArrayOf(2, 7, 11, 15), 9)
-    println("TwoSum => indices: ${res.joinToString()}")
+    demoLru()
 }
