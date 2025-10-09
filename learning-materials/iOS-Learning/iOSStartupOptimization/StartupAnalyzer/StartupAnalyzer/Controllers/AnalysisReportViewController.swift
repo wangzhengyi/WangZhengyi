@@ -87,7 +87,6 @@ class AnalysisReportViewController: UIViewController {
     // MARK: - 数据管理
     
     private var phaseRecords: [StartupPhaseAnalyzer.PhaseRecord] = []
-    private var performanceMetrics: PerformanceTracker.PerformanceMetrics?
     private var optimizationRecommendations: [OptimizationRecommendation] = []
     
     // MARK: - 生命周期
@@ -434,10 +433,8 @@ class AnalysisReportViewController: UIViewController {
     
     // MARK: - 数据更新
     
-    func updateAnalysisData(phaseRecords: [StartupPhaseAnalyzer.PhaseRecord], 
-                           metrics: PerformanceTracker.PerformanceMetrics) {
+    func updateAnalysisData(phaseRecords: [StartupPhaseAnalyzer.PhaseRecord]) {
         self.phaseRecords = phaseRecords
-        self.performanceMetrics = metrics
         
         DispatchQueue.main.async {
             self.refreshReport()
@@ -462,28 +459,17 @@ class AnalysisReportViewController: UIViewController {
         formatter.timeStyle = .short
         reportTimeLabel.text = "生成时间: \(formatter.string(from: Date()))"
         
-        if let metrics = performanceMetrics {
-            scoreLabel.text = "\(Int(metrics.overallScore))"
-            scoreLabel.textColor = getScoreColor(Int(metrics.overallScore))
-        } else {
-            scoreLabel.text = "--"
-            scoreLabel.textColor = .systemBlue
-        }
+        let score = calculatePerformanceScore(from: phaseRecords)
+        scoreLabel.text = score == nil ? "--" : "\(score!)"
+        scoreLabel.textColor = getScoreColor(score ?? 0)
     }
     
     private func updateOverviewInfo() {
-        guard let metrics = performanceMetrics else {
-            totalTimeLabel.text = "总启动时间: --"
-            averageFPSLabel.text = "平均FPS: --"
-            peakMemoryLabel.text = "内存峰值: --"
-            averageCPULabel.text = "平均CPU: --"
-            return
-        }
-        
-        totalTimeLabel.text = "总启动时间: 计算中..."
-        averageFPSLabel.text = String(format: "平均FPS: %.1f", metrics.fps)
-        peakMemoryLabel.text = String(format: "内存使用: %.1fMB", metrics.memoryUsage)
-        averageCPULabel.text = String(format: "CPU使用率: %.1f%%", metrics.cpuUsage)
+        let totalTime = phaseRecords.reduce(0) { $0 + $1.duration }
+        totalTimeLabel.text = String(format: "总启动时间: %.0fms", totalTime * 1000)
+        averageFPSLabel.text = "平均FPS: --"
+        peakMemoryLabel.text = "内存峰值: --"
+        averageCPULabel.text = "平均CPU: --"
     }
     
     private func updatePhaseAnalysis() {
@@ -491,34 +477,25 @@ class AnalysisReportViewController: UIViewController {
     }
     
     private func updateChart() {
-        if let metrics = performanceMetrics {
-            // 创建 PerformanceVisualizationView.PerformanceMetrics 对象
-            let visualMetrics = PerformanceVisualizationView.PerformanceMetrics(
-                totalStartupTime: 0.0, // 暂时使用默认值
-                averageFPS: metrics.fps,
-                peakMemoryUsage: metrics.memoryUsage,
-                averageCPUUsage: metrics.cpuUsage,
-                performanceScore: Int(metrics.overallScore)
-            )
-            // 调用正确的 API 方法
-            performanceVisualizationView.updatePerformanceData(
-                phaseRecords: phaseRecords,
-                metrics: visualMetrics
-            )
-        }
+        let totalTime = phaseRecords.reduce(0) { $0 + $1.duration }
+        let visualMetrics = PerformanceVisualizationView.PerformanceMetrics(
+            totalStartupTime: totalTime
+        )
+        performanceVisualizationView.updatePerformanceData(
+            phaseRecords: phaseRecords,
+            metrics: visualMetrics
+        )
     }
     
     private func updateDetailsText() {
         var detailsText = "启动性能详细分析\n"
         detailsText += "==================\n\n"
         
-        if let metrics = performanceMetrics {
-            detailsText += "性能指标:\n"
-            detailsText += "- 总启动时间: 计算中...\n"
-            detailsText += "- 峰值内存: \(String(format: "%.1fMB", metrics.memoryUsage))\n"
-            detailsText += "- 平均CPU: \(String(format: "%.1f%%", metrics.cpuUsage))\n"
-            detailsText += "- 性能评分: \(Int(metrics.overallScore))/100\n\n"
-        }
+        let totalTime = phaseRecords.reduce(0) { $0 + $1.duration }
+        let score = calculatePerformanceScore(from: phaseRecords) ?? 0
+        detailsText += "性能指标:\n"
+        detailsText += String(format: "- 总启动时间: %.0fms\n", totalTime * 1000)
+        detailsText += "- 性能评分: \(score)/100\n\n"
         
         detailsText += "阶段分析:\n"
         for (index, record) in phaseRecords.enumerated() {
@@ -562,51 +539,35 @@ class AnalysisReportViewController: UIViewController {
     }
     
     private func generateOptimizationRecommendations() {
-        guard let metrics = performanceMetrics else { return }
-        
         var recommendations: [OptimizationRecommendation] = []
+        let totalTime = phaseRecords.reduce(0) { $0 + $1.duration }
         
-        // 基于启动时间的建议 - 暂时跳过，因为没有totalStartupTime属性
-        // if metrics.totalStartupTime > 2.0 {
-        //     recommendations.append(OptimizationRecommendation(
-        //         title: "启动时间过长",
-        //         description: "当前启动时间超过2秒，建议优化启动流程，减少同步操作。",
-        //         priority: .high,
-        //         estimatedImpact: "减少启动时间 30-50%",
-        //         category: .startup
-        //     ))
-        // }
-        
-        // 基于FPS的建议
-        if metrics.fps < 45 {
+        if totalTime > 2.0 {
             recommendations.append(OptimizationRecommendation(
-                title: "帧率偏低",
-                description: "平均FPS低于45，建议优化UI渲染和减少主线程负载。",
-                priority: .medium,
-                estimatedImpact: "提升FPS 10-20",
-                category: .ui
-            ))
-        }
-        
-        // 基于内存的建议
-        if metrics.memoryUsage > 200 {
-            recommendations.append(OptimizationRecommendation(
-                title: "内存使用过高",
-                description: "内存峰值超过200MB，建议优化内存管理和减少不必要的对象创建。",
+                title: "启动时间过长",
+                description: "当前启动时间超过2秒，优化启动流程，减少同步操作与阻塞。",
                 priority: .high,
-                estimatedImpact: "减少内存使用 20-40%",
-                category: .memory
+                estimatedImpact: "减少启动时间 30-50%",
+                category: .startup
+            ))
+        } else if totalTime > 1.5 {
+            recommendations.append(OptimizationRecommendation(
+                title: "启动时间偏长",
+                description: "启动时间在1.5-2秒之间，建议延迟非关键模块初始化。",
+                priority: .medium,
+                estimatedImpact: "减少启动时间 10-20%",
+                category: .startup
             ))
         }
         
-        // 基于CPU的建议
-        if metrics.cpuUsage > 60 {
+        // 针对表现较差的阶段生成建议
+        for record in phaseRecords where record.performanceLevel == .poor {
             recommendations.append(OptimizationRecommendation(
-                title: "CPU使用率过高",
-                description: "平均CPU使用率超过60%，建议优化算法和减少计算密集型操作。",
-                priority: .medium,
-                estimatedImpact: "减少CPU使用 15-30%",
-                category: .cpu
+                title: "阶段优化：\(record.phase.rawValue)",
+                description: "该阶段表现较差，检查是否存在同步I/O、主线程阻塞或资源初始化过重。",
+                priority: .high,
+                estimatedImpact: "该阶段耗时减少 20-40%",
+                category: .startup
             ))
         }
         
@@ -627,11 +588,27 @@ class AnalysisReportViewController: UIViewController {
     
     func clearData() {
         phaseRecords.removeAll()
-        performanceMetrics = nil
         optimizationRecommendations.removeAll()
         
         DispatchQueue.main.async {
             self.refreshReport()
+        }
+    }
+
+    // MARK: - 评分计算（复用历史评分逻辑）
+    private func calculatePerformanceScore(from records: [StartupPhaseAnalyzer.PhaseRecord]) -> Int? {
+        guard !records.isEmpty else { return nil }
+        let totalTime = records.reduce(0) { $0 + $1.duration }
+        if totalTime < 0.5 {
+            return 95
+        } else if totalTime < 1.0 {
+            return 85
+        } else if totalTime < 1.5 {
+            return 75
+        } else if totalTime < 2.0 {
+            return 65
+        } else {
+            return 50
         }
     }
 }

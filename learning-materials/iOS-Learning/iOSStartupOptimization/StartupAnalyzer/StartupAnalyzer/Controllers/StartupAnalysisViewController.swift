@@ -44,11 +44,10 @@ class StartupAnalysisViewController: UIViewController {
     private var isMonitoring = false
     private var analysisStartTime: TimeInterval = 0
     private var currentSessionData: SessionData?
-    
+
     struct SessionData {
         let startTime: Date
         let phaseRecords: [StartupPhaseAnalyzer.PhaseRecord]
-        let performanceMetrics: PerformanceTracker.PerformanceMetrics
         let sessionId: String
     }
     
@@ -320,7 +319,6 @@ class StartupAnalysisViewController: UIViewController {
         
         // 开始监控
         StartupMonitor.shared.startMonitoring()
-        PerformanceTracker.shared.startTracking()
         StartupPhaseAnalyzer.shared.startAnalysis()
         
         // 更新UI状态
@@ -339,7 +337,6 @@ class StartupAnalysisViewController: UIViewController {
         
         // 停止监控
         StartupMonitor.shared.stopMonitoring()
-        PerformanceTracker.shared.stopTracking()
         StartupPhaseAnalyzer.shared.stopAnalysis()
         
         // 收集分析数据
@@ -398,21 +395,14 @@ class StartupAnalysisViewController: UIViewController {
     
     private func collectAnalysisData() {
         let phaseRecords = StartupPhaseAnalyzer.shared.getAllPhaseRecords()
-        
-        let performanceMetrics = PerformanceTracker.shared.getCurrentMetrics()
-        
         currentSessionData = SessionData(
             startTime: Date(timeIntervalSinceReferenceDate: analysisStartTime),
             phaseRecords: phaseRecords,
-            performanceMetrics: performanceMetrics,
             sessionId: UUID().uuidString
         )
         
         // 更新分析报告视图
-        analysisReportVC.updateAnalysisData(
-            phaseRecords: phaseRecords,
-            metrics: performanceMetrics
-        )
+        analysisReportVC.updateAnalysisData(phaseRecords: phaseRecords)
         
         // 保存到历史记录
         if let sessionData = currentSessionData {
@@ -425,15 +415,19 @@ class StartupAnalysisViewController: UIViewController {
         report += "===================\n\n"
         report += "分析时间: \(DateFormatter.localizedString(from: sessionData.startTime, dateStyle: .medium, timeStyle: .medium))\n"
         report += "会话ID: \(sessionData.sessionId)\n\n"
-        
-        let metrics = sessionData.performanceMetrics
+        // 基于启动阶段数据生成概览
+        let totalTime = sessionData.phaseRecords.reduce(0) { $0 + $1.duration }
+        let performanceScore: Int = {
+            if totalTime < 0.5 { return 95 }
+            else if totalTime < 1.0 { return 85 }
+            else if totalTime < 1.5 { return 75 }
+            else if totalTime < 2.0 { return 65 }
+            else { return 50 }
+        }()
         report += "📊 性能概览\n"
-        report += "总启动时间: 计算中...\n"
-        report += "平均FPS: \(String(format: "%.1f", metrics.fps))\n"
-        report += "内存峰值: \(String(format: "%.2f MB", metrics.memoryUsage))\n"
-        report += "平均CPU: \(String(format: "%.1f%%", metrics.cpuUsage))\n"
-        report += "性能评分: \(Int(metrics.overallScore))/100\n\n"
-        
+        report += "总启动时间: \(String(format: "%.3f ms", totalTime * 1000))\n"
+        report += "性能评分: \(performanceScore)/100\n\n"
+
         report += StartupPhaseAnalyzer.shared.getFormattedAnalysisReport()
         
         return report

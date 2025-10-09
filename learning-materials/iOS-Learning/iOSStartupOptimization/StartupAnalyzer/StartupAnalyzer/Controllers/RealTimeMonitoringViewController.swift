@@ -24,13 +24,6 @@ class RealTimeMonitoringViewController: UIViewController {
     private let phaseProgressView = UIProgressView(progressViewStyle: .default)
     private let phaseTimeLabel = UILabel()
     
-    // 性能指标监控
-    private let performanceSectionView = UIView()
-    private let performanceTitleLabel = UILabel()
-    private let fpsLabel = UILabel()
-    private let memoryLabel = UILabel()
-    private let cpuLabel = UILabel()
-    private let diskIOLabel = UILabel()
     
     // 实时图表
     private let chartSectionView = UIView()
@@ -88,9 +81,6 @@ class RealTimeMonitoringViewController: UIViewController {
         // 启动阶段监控区域
         setupStartupSection()
         
-        // 性能指标监控区域
-        setupPerformanceSection()
-        
         // 图表区域
         setupChartSection()
         
@@ -102,7 +92,6 @@ class RealTimeMonitoringViewController: UIViewController {
         scrollView.addSubview(contentView)
         
         contentView.addSubview(startupSectionView)
-        contentView.addSubview(performanceSectionView)
         contentView.addSubview(chartSectionView)
         contentView.addSubview(logSectionView)
     }
@@ -137,41 +126,7 @@ class RealTimeMonitoringViewController: UIViewController {
         startupSectionView.addSubview(phaseTimeLabel)
     }
     
-    private func setupPerformanceSection() {
-        performanceSectionView.backgroundColor = .secondarySystemBackground
-        performanceSectionView.layer.cornerRadius = 12
-        performanceSectionView.layer.shadowColor = UIColor.black.cgColor
-        performanceSectionView.layer.shadowOpacity = 0.1
-        performanceSectionView.layer.shadowOffset = CGSize(width: 0, height: 2)
-        performanceSectionView.layer.shadowRadius = 4
-        
-        performanceTitleLabel.text = "📊 性能指标"
-        performanceTitleLabel.font = .systemFont(ofSize: 18, weight: .bold)
-        performanceTitleLabel.textColor = .label
-        
-        setupPerformanceLabels()
-        
-        performanceSectionView.addSubview(performanceTitleLabel)
-        performanceSectionView.addSubview(fpsLabel)
-        performanceSectionView.addSubview(memoryLabel)
-        performanceSectionView.addSubview(cpuLabel)
-        performanceSectionView.addSubview(diskIOLabel)
-    }
     
-    private func setupPerformanceLabels() {
-        let labels = [fpsLabel, memoryLabel, cpuLabel, diskIOLabel]
-        let texts = ["FPS: --", "内存: --", "CPU: --%", "磁盘I/O: --"]
-        
-        for (index, label) in labels.enumerated() {
-            label.text = texts[index]
-            label.font = .monospacedDigitSystemFont(ofSize: 16, weight: .medium)
-            label.textColor = .label
-            label.backgroundColor = .tertiarySystemBackground
-            label.layer.cornerRadius = 8
-            label.textAlignment = .center
-            label.layer.masksToBounds = true
-        }
-    }
     
     private func setupChartSection() {
         chartSectionView.backgroundColor = .secondarySystemBackground
@@ -230,11 +185,10 @@ class RealTimeMonitoringViewController: UIViewController {
         scrollView.translatesAutoresizingMaskIntoConstraints = false
         contentView.translatesAutoresizingMaskIntoConstraints = false
         
-        let sectionViews = [startupSectionView, performanceSectionView, chartSectionView, logSectionView]
+        let sectionViews = [startupSectionView, chartSectionView, logSectionView]
         sectionViews.forEach { $0.translatesAutoresizingMaskIntoConstraints = false }
         
         let labels = [startupTitleLabel, currentPhaseLabel, phaseTimeLabel,
-                     performanceTitleLabel, fpsLabel, memoryLabel, cpuLabel, diskIOLabel,
                      chartTitleLabel, logTitleLabel]
         labels.forEach { $0.translatesAutoresizingMaskIntoConstraints = false }
         
@@ -280,38 +234,8 @@ class RealTimeMonitoringViewController: UIViewController {
             phaseTimeLabel.leadingAnchor.constraint(equalTo: startupSectionView.leadingAnchor, constant: 16),
             phaseTimeLabel.trailingAnchor.constraint(equalTo: startupSectionView.trailingAnchor, constant: -16),
             
-            // 性能指标监控区域约束
-            performanceSectionView.topAnchor.constraint(equalTo: startupSectionView.bottomAnchor, constant: 16),
-            performanceSectionView.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 16),
-            performanceSectionView.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -16),
-            performanceSectionView.heightAnchor.constraint(equalToConstant: 140),
-            
-            performanceTitleLabel.topAnchor.constraint(equalTo: performanceSectionView.topAnchor, constant: 12),
-            performanceTitleLabel.leadingAnchor.constraint(equalTo: performanceSectionView.leadingAnchor, constant: 16),
-            performanceTitleLabel.trailingAnchor.constraint(equalTo: performanceSectionView.trailingAnchor, constant: -16),
-            
-            fpsLabel.topAnchor.constraint(equalTo: performanceTitleLabel.bottomAnchor, constant: 12),
-            fpsLabel.leadingAnchor.constraint(equalTo: performanceSectionView.leadingAnchor, constant: 16),
-            fpsLabel.widthAnchor.constraint(equalTo: performanceSectionView.widthAnchor, multiplier: 0.45, constant: -20),
-            fpsLabel.heightAnchor.constraint(equalToConstant: 36),
-            
-            memoryLabel.topAnchor.constraint(equalTo: performanceTitleLabel.bottomAnchor, constant: 12),
-            memoryLabel.trailingAnchor.constraint(equalTo: performanceSectionView.trailingAnchor, constant: -16),
-            memoryLabel.widthAnchor.constraint(equalTo: performanceSectionView.widthAnchor, multiplier: 0.45, constant: -20),
-            memoryLabel.heightAnchor.constraint(equalToConstant: 36),
-            
-            cpuLabel.topAnchor.constraint(equalTo: fpsLabel.bottomAnchor, constant: 8),
-            cpuLabel.leadingAnchor.constraint(equalTo: performanceSectionView.leadingAnchor, constant: 16),
-            cpuLabel.widthAnchor.constraint(equalTo: performanceSectionView.widthAnchor, multiplier: 0.45, constant: -20),
-            cpuLabel.heightAnchor.constraint(equalToConstant: 36),
-            
-            diskIOLabel.topAnchor.constraint(equalTo: memoryLabel.bottomAnchor, constant: 8),
-            diskIOLabel.trailingAnchor.constraint(equalTo: performanceSectionView.trailingAnchor, constant: -16),
-            diskIOLabel.widthAnchor.constraint(equalTo: performanceSectionView.widthAnchor, multiplier: 0.45, constant: -20),
-            diskIOLabel.heightAnchor.constraint(equalToConstant: 36),
-            
             // 图表区域约束
-            chartSectionView.topAnchor.constraint(equalTo: performanceSectionView.bottomAnchor, constant: 16),
+            chartSectionView.topAnchor.constraint(equalTo: startupSectionView.bottomAnchor, constant: 16),
             chartSectionView.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 16),
             chartSectionView.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -16),
             chartSectionView.heightAnchor.constraint(equalToConstant: 280),
@@ -369,7 +293,6 @@ class RealTimeMonitoringViewController: UIViewController {
     private func updateRealTimeData() {
         DispatchQueue.main.async {
             self.updateStartupPhaseInfo()
-            self.updatePerformanceMetrics()
             self.updateVisualization()
         }
     }
@@ -395,108 +318,27 @@ class RealTimeMonitoringViewController: UIViewController {
         }
     }
     
-    private func updatePerformanceMetrics() {
-        let tracker = PerformanceTracker.shared
-        
-        if tracker.getIsTracking() {
-            let currentMetrics = tracker.getCurrentMetrics()
-            
-            fpsLabel.text = String(format: "FPS: %.1f", currentMetrics.fps)
-            fpsLabel.textColor = getFPSColor(currentMetrics.fps)
-            
-            memoryLabel.text = String(format: "内存: %.1fMB", currentMetrics.memoryUsage)
-            memoryLabel.textColor = getMemoryColor(currentMetrics.memoryUsage)
-            
-            cpuLabel.text = String(format: "CPU: %.1f%%", currentMetrics.cpuUsage)
-            cpuLabel.textColor = getCPUColor(currentMetrics.cpuUsage)
-            
-            diskIOLabel.text = String(format: "磁盘: %.1fMB/s", currentMetrics.diskIORate)
-            diskIOLabel.textColor = getDiskIOColor(currentMetrics.diskIORate)
-        } else {
-            fpsLabel.text = "FPS: --"
-            memoryLabel.text = "内存: --"
-            cpuLabel.text = "CPU: --%"
-            diskIOLabel.text = "磁盘I/O: --"
-            
-            let labels = [fpsLabel, memoryLabel, cpuLabel, diskIOLabel]
-            labels.forEach { $0.textColor = .label }
-        }
-    }
+    
     
     private func updateVisualization() {
-        let tracker = PerformanceTracker.shared
         let analyzer = StartupPhaseAnalyzer.shared
-        
-        if tracker.getIsTracking() {
-            let metrics = tracker.getCurrentMetrics()
-            // 创建 PerformanceVisualizationView.PerformanceMetrics 对象
+        if analyzer.getIsAnalyzing() {
             let visualMetrics = PerformanceVisualizationView.PerformanceMetrics(
-                totalStartupTime: analyzer.getTotalStartupTime(),
-                averageFPS: tracker.getAverageFPS(),
-                peakMemoryUsage: tracker.getPeakMemoryUsage(),
-                averageCPUUsage: tracker.getAverageCPUUsage(),
-                performanceScore: calculatePerformanceScore(metrics)
+                totalStartupTime: analyzer.getTotalStartupTime()
             )
-            // 获取阶段记录并调用正确的 API 方法
             let phaseRecords = analyzer.getAllPhaseRecords()
             performanceVisualizationView.updatePerformanceData(
                 phaseRecords: phaseRecords,
                 metrics: visualMetrics
             )
+        } else {
+            performanceVisualizationView.clearData()
         }
     }
     
     // MARK: - 颜色辅助方法
     
-    private func getFPSColor(_ fps: Double) -> UIColor {
-        if fps >= 55 { return .systemGreen }
-        if fps >= 45 { return .systemOrange }
-        return .systemRed
-    }
     
-    private func getMemoryColor(_ memory: Double) -> UIColor {
-        if memory <= 100 { return .systemGreen }
-        if memory <= 200 { return .systemOrange }
-        return .systemRed
-    }
-    
-    private func getCPUColor(_ cpu: Double) -> UIColor {
-        if cpu <= 30 { return .systemGreen }
-        if cpu <= 60 { return .systemOrange }
-        return .systemRed
-    }
-    
-    private func getDiskIOColor(_ diskIO: Double) -> UIColor {
-        if diskIO <= 10 { return .systemGreen }
-        if diskIO <= 50 { return .systemOrange }
-        return .systemRed
-    }
-    
-    private func calculatePerformanceScore(_ metrics: PerformanceTracker.PerformanceMetrics) -> Int {
-        var score = 100
-        
-        // FPS 评分
-        if metrics.fps < 30 { score -= 30 }
-        else if metrics.fps < 45 { score -= 15 }
-        else if metrics.fps < 55 { score -= 5 }
-        
-        // 内存评分
-        if metrics.memoryUsage > 300 { score -= 25 }
-        else if metrics.memoryUsage > 200 { score -= 15 }
-        else if metrics.memoryUsage > 100 { score -= 5 }
-        
-        // CPU 评分
-        if metrics.cpuUsage > 80 { score -= 25 }
-        else if metrics.cpuUsage > 60 { score -= 15 }
-        else if metrics.cpuUsage > 30 { score -= 5 }
-        
-        // 磁盘I/O 评分
-        if metrics.diskIORate > 100 { score -= 20 }
-        else if metrics.diskIORate > 50 { score -= 10 }
-        else if metrics.diskIORate > 10 { score -= 3 }
-        
-        return max(0, score)
-    }
     
     // MARK: - 日志管理
     
@@ -536,14 +378,6 @@ class RealTimeMonitoringViewController: UIViewController {
         currentPhaseLabel.text = "当前阶段: 未开始"
         phaseProgressView.progress = 0.0
         phaseTimeLabel.text = "耗时: 0.00ms"
-        
-        fpsLabel.text = "FPS: --"
-        memoryLabel.text = "内存: --"
-        cpuLabel.text = "CPU: --%"
-        diskIOLabel.text = "磁盘I/O: --"
-        
-        let labels = [fpsLabel, memoryLabel, cpuLabel, diskIOLabel]
-        labels.forEach { $0.textColor = .label }
         
         // 清除日志
         clearLog()

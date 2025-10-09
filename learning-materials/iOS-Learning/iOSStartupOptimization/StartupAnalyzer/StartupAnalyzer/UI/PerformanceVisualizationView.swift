@@ -20,21 +20,15 @@ class PerformanceVisualizationView: UIView {
     private let titleLabel = UILabel()
     private let summaryView = PerformanceSummaryView()
     private let phaseChartView = PhaseTimelineChartView()
-    private let categoryPieChartView = CategoryPieChartView()
-    private let performanceScoreView = PerformanceScoreView()
-    private let optimizationSuggestionsView = OptimizationSuggestionsView()
+    // 精简：移除非启动时间相关的视图（分类饼图、评分、建议）
     
     // MARK: - 数据属性
     
     private var phaseRecords: [StartupPhaseAnalyzer.PhaseRecord] = []
     private var performanceMetrics: PerformanceMetrics?
-    
+
     struct PerformanceMetrics {
         let totalStartupTime: TimeInterval
-        let averageFPS: Double
-        let peakMemoryUsage: Double
-        let averageCPUUsage: Double
-        let performanceScore: Int
     }
     
     // MARK: - 初始化
@@ -73,9 +67,6 @@ class PerformanceVisualizationView: UIView {
         contentView.addSubview(titleLabel)
         contentView.addSubview(summaryView)
         contentView.addSubview(phaseChartView)
-        contentView.addSubview(categoryPieChartView)
-        contentView.addSubview(performanceScoreView)
-        contentView.addSubview(optimizationSuggestionsView)
         
         // 设置子视图样式
         setupSubviewStyles()
@@ -87,7 +78,7 @@ class PerformanceVisualizationView: UIView {
         let shadowOffset = CGSize(width: 0, height: 2)
         let shadowRadius: CGFloat = 4
         
-        let views = [summaryView, phaseChartView, categoryPieChartView, performanceScoreView, optimizationSuggestionsView]
+        let views = [summaryView, phaseChartView]
         
         for view in views {
             view.backgroundColor = .secondarySystemBackground
@@ -105,9 +96,6 @@ class PerformanceVisualizationView: UIView {
         titleLabel.translatesAutoresizingMaskIntoConstraints = false
         summaryView.translatesAutoresizingMaskIntoConstraints = false
         phaseChartView.translatesAutoresizingMaskIntoConstraints = false
-        categoryPieChartView.translatesAutoresizingMaskIntoConstraints = false
-        performanceScoreView.translatesAutoresizingMaskIntoConstraints = false
-        optimizationSuggestionsView.translatesAutoresizingMaskIntoConstraints = false
         
         NSLayoutConstraint.activate([
             // 滚动视图约束
@@ -140,23 +128,8 @@ class PerformanceVisualizationView: UIView {
             phaseChartView.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -16),
             phaseChartView.heightAnchor.constraint(equalToConstant: 300),
             
-            // 分类饼图约束
-            categoryPieChartView.topAnchor.constraint(equalTo: phaseChartView.bottomAnchor, constant: 16),
-            categoryPieChartView.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 16),
-            categoryPieChartView.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -16),
-            categoryPieChartView.heightAnchor.constraint(equalToConstant: 250),
-            
-            // 性能评分约束
-            performanceScoreView.topAnchor.constraint(equalTo: categoryPieChartView.bottomAnchor, constant: 16),
-            performanceScoreView.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 16),
-            performanceScoreView.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -16),
-            performanceScoreView.heightAnchor.constraint(equalToConstant: 150),
-            
-            // 优化建议约束
-            optimizationSuggestionsView.topAnchor.constraint(equalTo: performanceScoreView.bottomAnchor, constant: 16),
-            optimizationSuggestionsView.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 16),
-            optimizationSuggestionsView.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -16),
-            optimizationSuggestionsView.bottomAnchor.constraint(equalTo: contentView.bottomAnchor, constant: -20)
+            // 内容底部约束（以阶段图表为底）
+            phaseChartView.bottomAnchor.constraint(equalTo: contentView.bottomAnchor, constant: -20)
         ])
     }
     
@@ -179,16 +152,10 @@ class PerformanceVisualizationView: UIView {
         guard let metrics = performanceMetrics else { return }
         
         summaryView.updateSummary(
-            totalTime: metrics.totalStartupTime,
-            averageFPS: metrics.averageFPS,
-            peakMemory: metrics.peakMemoryUsage,
-            averageCPU: metrics.averageCPUUsage
+            totalTime: metrics.totalStartupTime
         )
         
         phaseChartView.updatePhaseData(phaseRecords)
-        categoryPieChartView.updateCategoryData(phaseRecords)
-        performanceScoreView.updateScore(metrics.performanceScore)
-        optimizationSuggestionsView.updateSuggestions(phaseRecords)
     }
 }
 
@@ -198,9 +165,6 @@ class PerformanceSummaryView: UIView {
     
     private let stackView = UIStackView()
     private let totalTimeLabel = MetricLabel()
-    private let fpsLabel = MetricLabel()
-    private let memoryLabel = MetricLabel()
-    private let cpuLabel = MetricLabel()
     
     override init(frame: CGRect) {
         super.init(frame: frame)
@@ -221,9 +185,6 @@ class PerformanceSummaryView: UIView {
         stackView.translatesAutoresizingMaskIntoConstraints = false
         
         stackView.addArrangedSubview(totalTimeLabel)
-        stackView.addArrangedSubview(fpsLabel)
-        stackView.addArrangedSubview(memoryLabel)
-        stackView.addArrangedSubview(cpuLabel)
         
         NSLayoutConstraint.activate([
             stackView.topAnchor.constraint(equalTo: topAnchor, constant: 16),
@@ -233,11 +194,8 @@ class PerformanceSummaryView: UIView {
         ])
     }
     
-    func updateSummary(totalTime: TimeInterval, averageFPS: Double, peakMemory: Double, averageCPU: Double) {
+    func updateSummary(totalTime: TimeInterval) {
         totalTimeLabel.update(title: "启动时间", value: "\(String(format: "%.0f", totalTime * 1000))ms", color: .systemBlue)
-        fpsLabel.update(title: "平均FPS", value: String(format: "%.1f", averageFPS), color: .systemGreen)
-        memoryLabel.update(title: "内存峰值", value: "\(String(format: "%.1f", peakMemory))MB", color: .systemOrange)
-        cpuLabel.update(title: "平均CPU", value: "\(String(format: "%.1f", averageCPU))%", color: .systemPurple)
     }
 }
 

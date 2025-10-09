@@ -31,9 +31,6 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         // 创建窗口和根视图控制器
         setupWindow()
         
-        // 启动性能追踪
-        startPerformanceTracking()
-        
         // 完成启动阶段监控
         completeStartupMonitoring()
         
@@ -48,9 +45,6 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     func applicationDidEnterBackground(_ application: UIApplication) {
         // 应用进入后台
         print("📱 应用进入后台")
-        
-        // 停止性能监控以节省资源
-        PerformanceTracker.shared.stopTracking()
     }
     
     func applicationWillEnterForeground(_ application: UIApplication) {
@@ -61,9 +55,6 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     func applicationDidBecomeActive(_ application: UIApplication) {
         // 应用变为活跃状态
         print("📱 应用变为活跃状态")
-        
-        // 重新开始性能监控
-        PerformanceTracker.shared.startTracking()
     }
     
     func applicationWillTerminate(_ application: UIApplication) {
@@ -174,24 +165,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         print("📊 启动阶段监控已开始")
     }
     
-    private func startPerformanceTracking() {
-        print("📈 开始性能追踪")
-        
-        // 开始性能追踪
-        PerformanceTracker.shared.startTracking()
-        
-        // 延迟启动一些非关键的监控功能
-        DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
-            self.startAdvancedMonitoring()
-        }
-    }
-    
-    private func startAdvancedMonitoring() {
-        print("🔬 开始高级监控功能")
-        
-        // 这里可以添加更多高级监控功能
-        // 例如：网络监控、磁盘I/O监控等
-    }
+    // 已移除与PerformanceTracker相关的追踪逻辑
     
     private func completeStartupMonitoring() {
         // 延迟标记启动完成，确保UI完全加载
@@ -262,7 +236,6 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         print("🛑 停止所有监控")
         
         StartupMonitor.shared.stopMonitoring()
-        PerformanceTracker.shared.stopTracking()
         StartupPhaseAnalyzer.shared.stopAnalysis()
     }
     
@@ -379,7 +352,6 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         
         // 重新开始监控
         startStartupMonitoring()
-        startPerformanceTracking()
         
         // 模拟启动完成
         DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
