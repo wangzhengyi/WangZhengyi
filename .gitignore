@@ -135,3 +135,9 @@ wheels/
 # Personal files
 *.personal
 *.private
+
+# Swift / SwiftPM
+# Ignore Swift Package Manager build artifacts generated under package directories
+**/.build/
+# Optional: ignore SwiftPM workspace data (Xcode can recreate as needed)
+**/.swiftpm/
